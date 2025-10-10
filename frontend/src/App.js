@@ -1,47 +1,54 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function App() {
-  const [users, setUsers] = useState([]);
-  const [name, setName] = useState("");
+  const [todos, setTodos] = useState([]);
+  const [title, setTitle] = useState('');
 
-  // Lấy dữ liệu từ backend
+  // Lấy danh sách khi load
   useEffect(() => {
-    fetch("http://localhost:5000/api/users")
-      .then(res => res.json())
-      .then(data => setUsers(data));
+    fetchTodos();
   }, []);
 
-  const addUser = async (e) => {
-    e.preventDefault();
-    const res = await fetch("http://localhost:5000/api/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name })
-    });
-    const newUser = await res.json();
-    setUsers([...users, newUser]);
-    setName("");
+  const fetchTodos = async () => {
+    try {
+      const res = await axios.get('/api/todos');
+      setTodos(res.data);
+    } catch (error) {
+      console.error('Lỗi lấy danh sách:', error);
+    }
+  };
+
+  const addTodo = async () => {
+    if (!title.trim()) return;
+    try {
+      const res = await axios.post('/api/todos', { title });
+      setTodos([...todos, res.data]);
+      setTitle('');
+    } catch (error) {
+      console.error('Lỗi thêm todo:', error);
+    }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>🧍 Danh sách người dùng</h1>
+    <div style={{ padding: '2rem' }}>
+      <h1>📝 Danh sách công việc</h1>
+
+      <input
+        type="text"
+        value={title}
+        placeholder="Nhập công việc..."
+        onChange={e => setTitle(e.target.value)}
+      />
+      <button onClick={addTodo}>Thêm</button>
+
       <ul>
-        {users.map(u => (
-          <li key={u.id}>{u.name}</li>
+        {todos.map(todo => (
+          <li key={todo.id}>
+            {todo.title} {todo.completed ? '✅' : ''}
+          </li>
         ))}
       </ul>
-
-      <h2>📝 Thêm người dùng mới</h2>
-      <form onSubmit={addUser}>
-        <input
-          type="text"
-          placeholder="Nhập tên..."
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <button type="submit">Thêm</button>
-      </form>
     </div>
   );
 }

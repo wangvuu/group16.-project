@@ -1,3 +1,5 @@
+// Updated minor change for merge test
+
 // src/pages/Profile.jsx
 import React, { useEffect, useState } from 'react';
 
